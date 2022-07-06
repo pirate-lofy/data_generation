@@ -1,0 +1,10 @@
+field,x,y,height,maxWidth,dataType
+id,382,16,24,170,[numbers]
+startDate,206,16,24,80,[numbers,symbols]
+job,382,40,24,264,text
+jobAddress,382,64,24,264,text
+gender,382,86,28,70,text
+religion,308,86,28,70,text
+maritalStatus,208,86,28,70,text
+someNumber,460,136,24,44,numbers
+validDate,382,134,32,232,numbers+text+symbols
