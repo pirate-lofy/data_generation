@@ -9,6 +9,7 @@ from bidi.algorithm import get_display
 import pandas as pd
 
 sz=(301,295)
+path='data/ar_val/'
 
 emptyId = cv.imread('emptyId.jpg')
 emptyId=cv.resize(emptyId,sz)
@@ -20,7 +21,7 @@ sh_data=glob(sh_data+'*')
 yDim = ['fName', 'lName', 'fAddress', 'lAddress', 'idNumber']
 yDict ={'fName':75, 'lName':105, 'sAddress': 135, 'rAddress': 165, 'idNumber': 225 }
 
-fname_pos=(210,80)
+fname_pos=(100,80)
 lname_pos=(110,115)
 fadd_pos=(220,155)
 ladd_pos=(110,180)
@@ -100,11 +101,11 @@ def play_img(img):
     return img
 
 
-names = pd.read_csv("names.txt")
+names = pd.read_csv("ar_dict.txt")
 name_numpy = names.to_numpy()
 
 fontpath = "arialBlack.ttf"
-font = ImageFont.truetype(fontpath, 24)
+font = ImageFont.truetype(fontpath, 18)
 b, g, r, a = 0, 0, 0, 0
 count = 0
 fileNameList = []
@@ -122,7 +123,7 @@ fileNameList=[]
 wordList=[]
 j=0
 
-for i in range(50):
+for i in range(300):
     labelString = ''
     texts=[]
 
@@ -133,56 +134,74 @@ for i in range(50):
             labelString = random.choice(name_numpy)
             reshaped_text = arabic_reshaper.reshape(labelString)
             reshaped_text = get_display(reshaped_text, base_dir='R')
-            draw.text(fname_pos,  reshaped_text,font=font, fill=(b, g, r, a))
+            totalWidth=font.getsize(reshaped_text)[0]
+            draw.text((280-totalWidth,80),  reshaped_text,font=font, fill=(b, g, r, a))
             texts.append(labelString)
 
         elif nametype ==  'lName':
             labelString = (random.choice(name_numpy)+ ' ' + random.choice(name_numpy) + ' ' + random.choice(name_numpy))
             reshaped_text = arabic_reshaper.reshape(labelString)
             reshaped_text = get_display(reshaped_text, base_dir='L')
-            draw.text(lname_pos,  reshaped_text, anchor="la",font=font, fill=(b, g, r, a))
+            totalWidth=font.getsize(reshaped_text)[0]
+            draw.text((280-totalWidth,115),  reshaped_text,font=font, fill=(b, g, r, a))
             texts.append(labelString)
 
         elif nametype == 'idNumber':
             labelString = ''.join(random.choice(idNumbers) for i in range(14))
             reshaped_text = arabic_reshaper.reshape(labelString )
             reshaped_text = get_display(reshaped_text, base_dir='L')
-            draw.text(nn_pos,  reshaped_text, anchor="ma",font=font, fill=(b, g, r, a))
+            totalWidth=font.getsize(reshaped_text)[0]
+            draw.text((280-totalWidth,260),  reshaped_text,font=font, fill=(b, g, r, a))
             texts.append(labelString)
 
         elif nametype=='fAddress':
-            labelString = random.choice(name_numpy)
+            labelString = random.choice(name_numpy)+ ' ' + random.choice(name_numpy)
             reshaped_text = arabic_reshaper.reshape(labelString)
             reshaped_text = get_display(reshaped_text, base_dir='L')
-            draw.text(fadd_pos,  reshaped_text, font=font, fill=(b, g, r, a))
+            totalWidth=font.getsize(reshaped_text)[0]
+            draw.text((280-totalWidth,155),  reshaped_text,font=font, fill=(b, g, r, a))
             texts.append(labelString)
 
         elif nametype=='lAddress':
-            labelString = random.choice(name_numpy)+ ' ' + random.choice(name_numpy) + ' ' + random.choice(name_numpy)
+            labelString = random.choice(name_numpy)+ ' ' + random.choice(name_numpy) + ' ' + random.choice(name_numpy) \
+                + ' ' + random.choice(name_numpy)
             reshaped_text = arabic_reshaper.reshape(labelString)
             reshaped_text = get_display(reshaped_text, base_dir='L')
-            draw.text(ladd_pos,  reshaped_text, font=font, fill=(b, g, r, a))
+            totalWidth=font.getsize(reshaped_text)[0]
+            draw.text((280-totalWidth,180),  reshaped_text,font=font, fill=(b, g, r, a))
             texts.append(labelString)
 
 
     img_pil = np.array(img_pil)
     #img=skew(img_pil)
     img_pil=play_img(img_pil)
+    '''
+    show('',img_pil)
+    if cv.waitKey(0)==27:
+        break
+    '''
 
     margin=5
     for i in range(len(texts)):
+        p2=lengths[i][1]
+        totalWidth, totalHeight =font.getsize(texts[i])
+        totalWidth = totalWidth + 3
+        p1=280-totalWidth
+
+        if 280-totalWidth<0:
+            continue
+
+        img=img_pil[p2-3:p2 + totalHeight+6, 280-totalWidth:283]#, :
         print(j,texts[i])
-        p=lengths[i]
-        p1,p2=p[1],p[0]
-        space=font.getsize(texts[i])
-        img=img_pil[p1-margin//2:p1+space[1]+margin//2,p2-margin:p2+space[0]+margin]
+        #[p1-margin//2:p1+totalWidth[1]+margin//2,p2-margin:p2+totalWidth[0]+margin]
 
         #img=cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-        cv.imwrite('NourHelalSample/'+str(j)+'.png',img)
+        cv.imwrite(path+str(j)+'.png',img)
         fileNameList.append(str(j)+'.png')
         wordList.append(texts[i])
         j+=1
 
+
 dict = {'filename': fileNameList, 'words': wordList}#name_numpy.tolist()}
 df = pd.DataFrame(dict)
-df.to_csv('data/labels.csv', index=False)
+df.to_csv(path+'labels.csv', index=False)
